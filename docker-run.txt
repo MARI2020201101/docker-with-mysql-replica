@@ -9,3 +9,13 @@ docker run -i -t --name db001 \
 -p 3306:3306 \
 -e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
 
+create database test;
+
+use test;
+
+create table t1(id int not null);
+
+insert into t1 values(1),(2),(3);
+
+select * from t1;
+
