@@ -1,0 +1,13 @@
+mkdir -p /db/proxysql/data /db/proxysql/conf
+chmod 777 /db/proxysql /db/proxysql/data /db/proxysql/conf
+
+docker run -i -t --name proxysql -h proxysql \
+--net mybridge --net-alias=proxysql \
+-p 16032:6032 -p 16033:6033  \
+-v /db/proxysql/data:/var/lib/proxysql \
+-v /db/proxysql/conf/proxysql.cnf:/etc/proxysql.cnf \
+-d proxysql/proxysql
+
+docker ps
+
+mysql -h127.0.0.1 -P16032 -uradmin -pradmin --prompt "ProxySQL Admin"

@@ -1,5 +1,26 @@
+#orchestrator를 위한 컨테이너 생성
 docker run -i -t --name orchestrator -h orchestrator \
 --net mybridge --net-alias=orchestrator \
 -p 3000:3000 -d openarkcode/orchestrator:latest
 
 docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}"
+
+#마스터 컨테이너 ip 확인
+docker inspect --format '{{.NetworkSettings.Networks.mybridge.IPAddress}}' db001
+#172.18.0.2
+
+
+docker exec -it -uroot db001 /bin/bash
+mysql -uroot -p
+create user orc_client_user@'172.%' identified by 'orc_client_password';
+grant super, process, replication slave, reload on *.* to orc_client_user@'172.%';
+
+grant select on mysql.slave_master_info to orc_client_user@'172.%';
+
+#웹브라우저에서 orchestrator 접속
+http://{docker.host.ip}:3000/web/clusters
+
+#auto-failover를 위한 설정 변경
+docker exec -it orchestrator /bin/bash
+cd /etc
+vi orchestrator.conf.json
