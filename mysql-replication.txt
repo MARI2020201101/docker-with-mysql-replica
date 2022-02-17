@@ -7,7 +7,7 @@ create user 'repl'@'%' identified by 'repl';
 grant replication slave on *.* to 'repl'@'%';
 
 #마스터 컨테이너 ip 확인
-ifconfig
+ifconfig #172.17.0.2
 
 #슬레이브 컨테이너 접속
 docker exec -it -uroot db002 /bin/bash
@@ -15,7 +15,7 @@ mysql -uroot -p
 
 #슬레이브 구성 시작
 reset master;
-change master to master_host='', \
+change master to master_host='172.17.0.2', \
 master_user='repl', master_password='repl', \
 master_auto_position=1;
 
@@ -28,7 +28,7 @@ show slave status\G
 docker exec -it -uroot db003 /bin/bash
 mysql -uroot -p
 reset master;
-change master to master_host='', \
+change master to master_host='172.17.0.2', \
 master_user='repl', master_password='repl', \
 master_auto_position=1;
 
