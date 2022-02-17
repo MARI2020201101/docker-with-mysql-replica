@@ -1,0 +1,30 @@
+docker exec -it -uroot db001 /bin/bash
+mysql -uroot -p
+create user 'repl'@'%' identified by 'repl';
+grant replication slave on *.* to 'repl'@'%';
+
+#컨테이너 안에서 네트워크 PING가는지 확인
+ping db001
+ping db002
+ping db003
+
+docker exec -it -uroot db002 /bin/bash
+mysql -uroot -p
+reset master;
+#마스터 서버의 컨테이너명으로 mysql복제
+change master to master_host='db001', \
+master_user='repl', master_password='repl', \
+master_auto_position=1;
+start slave;
+show slave status\G
+
+docker exec -it -uroot db003 /bin/bash
+mysql -uroot -p
+reset master;
+change master to master_host='db001', \
+master_user='repl', master_password='repl', \
+master_auto_position=1;
+start slave;
+show slave status\G
+
+#이제 마스터 서버가 변경되더라도 컨테이너 명으로 replication이 지속가능하다.

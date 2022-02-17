@@ -1,0 +1,5 @@
+docker run -i -t --name orchestrator -h orchestrator \
+--net mybridge --net-alias=orchestrator \
+-p 3000:3000 -d openarkcode/orchestrator:latest
+
+docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}"

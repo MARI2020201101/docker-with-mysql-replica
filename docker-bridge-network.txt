@@ -1,6 +1,35 @@
+#도커 네트워크 확인
 docker network ls
 docker network create --driver bridge mybridge
 
+#컨테이너 삭제
 docker stop db001 db002 db003
 docker rm db001 db002 db003
 
+#관련 LOG / DATA 디렉토리 내용물 삭제
+rm -rf *
+
+#네트워크 alias 사용하여 컨테이너 생성 
+docker run -i -t --name db001 \
+-p 3306:3306 \
+--net mybridge --net-alias=db001 \
+-v /db/db001/data:/var/lib/mysql \
+-v /db/db001/log:/var/log/mysql \
+-v /db/db001/conf:/etc/percona-server.conf.d \
+-e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
+
+docker run -i -t --name db002 -h db002 \
+-p 3307:3306 \
+--net mybridge --net-alias=db002 \
+-v /db/db002/data:/var/lib/mysql \
+-v /db/db002/log:/var/log/mysql \
+-v /db/db002/conf:/etc/percona-server.conf.d \
+-e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
+
+docker run -i -t --name db003 -h db003 \
+-p 3308:3306 \
+--net mybridge --net-alias=db003 \
+-v /db/db003/data:/var/lib/mysql \
+-v /db/db003/log:/var/log/mysql \
+-v /db/db003/conf:/etc/percona-server.conf.d \
+-e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
