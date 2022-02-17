@@ -1,6 +1,36 @@
+#마스터 컨테이너 접속
 docker exec -it -uroot db001 /bin/bash
 mysql -uroot -p
+
+#복제 구성에 필요한 유저 생성
 create user 'repl'@'%' identified by 'repl';
 grant replication slave on *.* to 'repl'@'%';
 
+#마스터 컨테이너 ip 확인
 ifconfig
+
+#슬레이브 컨테이너 접속
+docker exec -it -uroot db002 /bin/bash
+mysql -uroot -p
+
+#슬레이브 구성 시작
+reset master;
+change master to master_host='', \
+master_user='repl', master_password='repl', \
+master_auto_position=1;
+
+#슬레이브 시작
+start slave;
+
+#슬레이브 연결 확인
+show slave status\G
+
+docker exec -it -uroot db003 /bin/bash
+mysql -uroot -p
+reset master;
+change master to master_host='', \
+master_user='repl', master_password='repl', \
+master_auto_position=1;
+
+start slave;
+show slave status\G
