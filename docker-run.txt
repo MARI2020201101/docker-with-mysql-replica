@@ -1,0 +1,11 @@
+docker run -i -t --name db001 \
+-e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
+
+docker exec -it db001 /bin/bash
+
+mysql -uroot -p
+
+docker run -i -t --name db001 \
+-p 3306:3306 \
+-e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
+
