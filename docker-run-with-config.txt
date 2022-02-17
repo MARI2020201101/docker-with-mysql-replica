@@ -18,3 +18,4 @@ docker run -i -t --name db003 -h db003 \
 -v /db/db003/log:/var/log/mysql \
 -v /db/db003/conf:/etc/percona-server.conf.d \
 -e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
+

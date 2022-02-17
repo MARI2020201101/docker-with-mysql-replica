@@ -1,0 +1,6 @@
+docker exec -it -uroot db001 /bin/bash
+mysql -uroot -p
+create user 'repl'@'%' identified by 'repl';
+grant replication slave on *.* to 'repl'@'%';
+
+ifconfig

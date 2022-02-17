@@ -26,3 +26,5 @@ mkdir -p /db/db002/log /db/db002/conf;
 chmod 777 /db/db002/log /db/db002/conf;
 mkdir -p /db/db003/log /db/db003/conf;
 chmod 777 /db/db003/log /db/db003/conf 
+
+chmod 644 my.cnf
