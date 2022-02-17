@@ -1,0 +1,10 @@
+mkdir -p /db/db001/data
+
+chmod 777 /db /db/db001 /db/db001/data
+
+docker run -i -t --name db001 \
+-p 3306:3306 \
+-v /db/db001/data:/var/lib/mysql \
+-e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
+
+mysql -uroot -p -h 127.0.0.1
