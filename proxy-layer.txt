@@ -11,3 +11,4 @@ docker run -i -t --name proxysql -h proxysql \
 docker ps
 
 mysql -h127.0.0.1 -P16032 -uradmin -pradmin --prompt "ProxySQL Admin"
+

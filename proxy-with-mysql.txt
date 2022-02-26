@@ -1,0 +1,28 @@
+docker exec -it -uroot db001 /bin/bash
+mysql -uroot -p
+create user appuser@'%' identified by 'apppass';
+grant select, insert, update, delete on test.* to appuser@'%';
+
+create user 'monitor'@'%' identified by 'monitor';
+grant replication client on *.* to 'monitor'@'%';
+
+flush privileges;
+
+mysql -h127.0.0.1 -P16032 -uradmin -pradmin --prompt "ProxySQL Admin >"
+insert into mysql_servers(hostgroup_id, hostname, port) values (10, 'db001',3306);
+insert into mysql_servers(hostgroup_id, hostname, port) values (20, 'db001',3306);
+insert into mysql_servers(hostgroup_id, hostname, port) values (20, 'db002',3306);
+insert into mysql_servers(hostgroup_id, hostname, port) values (20, 'db003',3306);
+insert into mysql_replication_hostgroups values (10,20, 'read_only', '');
+load mysql servers to runtime;
+save mysql servers to disk;
+
+insert into mysql_users(username, password, default_hostgroup, transaction_persistent) values ('appuser', 'apppass',10,0);
+load mysql users to runtime;
+save mysql users to disk;
+
+insert into mysql_query_rules (rule_id,active,match_pattern,destination_hostgroup) values (1,1,'^SELECT.*FOR UPDATE$',10);
+insert into mysql_query_rules (rule_id,active,match_pattern,destination_hostgroup) values (2,1,'^SELECT',20);
+
+load mysql query rules to runtime;
+save mysql query rules to disk;
