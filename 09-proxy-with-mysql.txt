@@ -1,0 +1,106 @@
+docker exec -it -uroot db001 /bin/bash
+mysql -uroot -p
+
+create database testdb default character set utf8;
+create user appuser@'%' identified by 'apppass';
+grant select, insert, update, delete on test.* to appuser@'%';
+
+create user 'monitor'@'%' identified by 'monitor';
+grant replication client on *.* to 'monitor'@'%';
+
+flush privileges;
+
+#proxy SQL접속하여 서버정보를 등록한다
+mysql -h127.0.0.1 -P16032 -uradmin -pradmin --prompt "ProxySQL Admin > "
+
+#10번 호스트 그룹:WRITE
+insert into mysql_servers(hostgroup_id, hostname, port) values (10, 'db001',3306);
+#20번 호스트 그룹:READ
+insert into mysql_servers(hostgroup_id, hostname, port) values (20, 'db001',3306);
+insert into mysql_servers(hostgroup_id, hostname, port) values (20, 'db002',3306);
+insert into mysql_servers(hostgroup_id, hostname, port) values (20, 'db003',3306);
+#WRITE,READ, read_only 파라메터 설정으로 확인
+insert into mysql_replication_hostgroups values (10,20, 'read_only', '');
+
+#등록한 서버정보 적용
+load mysql servers to runtime;
+save mysql servers to disk;
+
+#proxy sql을 사용할 유저정보 등록
+insert into mysql_users(username, password, default_hostgroup, transaction_persistent) values ('appuser', 'apppass',10,0);
+load mysql users to runtime;
+save mysql users to disk;
+
+#write는 10번으로 가라는 쿼리정보 등록
+insert into mysql_query_rules (rule_id,active,match_pattern,destination_hostgroup) values (1,1,'^SELECT.*FOR UPDATE$',10);
+
+#read는 20번으로 가라는 쿼리정보 등록
+insert into mysql_query_rules (rule_id,active,match_pattern,destination_hostgroup) values (2,1,'^SELECT',20);
+
+load mysql query rules to runtime;
+save mysql query rules to disk;
+
+#테스트 스크립트 connect
+vi app_test_conn.sh
+sh app_test_conn.sh
+
+#테스트 스크립트 insert 를 위한 테이블 생성 
+docker exec -it db001 /bin/bash
+mysql -uroot -p
+use testdb;
+create table insert_test( hostname varchar(5) not null, insert_time datetime not null);
+
+vi app_test_insert.sh
+sh app_test_insert.sh
+
+#insert된 데이터 확인
+docker exec -it db001 /bin/bash
+mysql -uroot -p
+select * from testdb.insert_test;
+
+#데이터 지운 후 다시 insert테스트
+truncate table testdb.insert_test;
+
+#콘솔 세개 열기
+sh app_test_insert.sh
+
+#인위적인 장애상황
+docker stop db001;
+
+#자동으로 프록시 서버가 db002를 마스터로 인식할 수 있어야 한다.!!
+#failover가 잘 되어서 app서버가 동일한 접속정보로 연결이 가능한가
+docker exec -it db002 /bin/bash
+mysql -uroot -p
+select * from testdb.insert_test;
+
+#다시 db001 원복하기
+docker start db001;
+
+docker exec -it -uroot db001 /bin/bash
+mysql -uroot -p
+select @@read_only;
+set global read_only=1;
+
+change master to master_host='db002', \
+master_user='repl', master_password='repl', \
+master_auto_position=1;
+
+start slave;
+show slave status\G
+
+#002 slave로 만들기
+docker stop db002;
+#여기서 다시 리밸런싱되어 db001이 마스터가 되었을것이다
+docker start db002;
+
+docker exec -it -uroot db002 /bin/bash
+mysql -uroot -p
+select @@read_only;
+set global read_only=1;
+
+change master to master_host='db001', \
+master_user='repl', master_password='repl', \
+master_auto_position=1;
+
+start slave;
+show slave status\G
