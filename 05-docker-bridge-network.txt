@@ -10,7 +10,7 @@ docker rm db001 db002 db003
 rm -rf *
 
 #네트워크 alias 사용하여 컨테이너 생성 
-docker run -i -t --name db001 \
+docker run -i -t --name db001 --privileged=true \
 -p 3306:3306 \
 --net mybridge --net-alias=db001 \
 -v /db/db001/data:/var/lib/mysql \
@@ -18,7 +18,7 @@ docker run -i -t --name db001 \
 -v /db/db001/conf:/etc/percona-server.conf.d \
 -e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
 
-docker run -i -t --name db002 -h db002 \
+docker run -i -t --name db002 -h db002 --privileged=true \
 -p 3307:3306 \
 --net mybridge --net-alias=db002 \
 -v /db/db002/data:/var/lib/mysql \
@@ -26,7 +26,7 @@ docker run -i -t --name db002 -h db002 \
 -v /db/db002/conf:/etc/percona-server.conf.d \
 -e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
 
-docker run -i -t --name db003 -h db003 \
+docker run -i -t --name db003 -h db003 --privileged=true \
 -p 3308:3306 \
 --net mybridge --net-alias=db003 \
 -v /db/db003/data:/var/lib/mysql \
