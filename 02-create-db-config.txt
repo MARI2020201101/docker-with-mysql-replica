@@ -2,17 +2,18 @@ mkdir -p /db/db001/data
 
 chmod 777 /db/db001 /db/db001/data
 
-docker run -i -t --name db001 \
+docker run -i -t --name db001 --privileged=true \
 -p 3306:3306 \
 -v /db/db001/data:/var/lib/mysql \
--e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
+-e MYSQL_ROOT_PASSWORD="root" \
+percona:5.7.30
 
 mysql -uroot -p -h 127.0.0.1
 
 mkdir -p /db/db001/log /db/db001/conf
 chmod 777 /db/db001/log /db/db001/conf
 
-docker run -i -t --name db001 \
+docker run -i -t --name db001 --privileged=true \
 -p 3306:3306 \
 -v /db/db001/data:/var/lib/mysql \
 -v /db/db001/log:/var/log/mysql \

@@ -7,7 +7,7 @@ mysql -uroot -p
 
 docker run -i -t --name db001 \
 -p 3306:3306 \
--e MYSQL_ROOT_PASSWORD="root" -d percona:5.7.30
+-e MYSQL_ROOT_PASSWORD="root" percona:5.7.30
 
 create database test;
 
@@ -18,4 +18,11 @@ create table t1(id int not null);
 insert into t1 values(1),(2),(3);
 
 select * from t1;
+
+sudo dnf module disable mysql
+yum install -y Percona-Server-server-57;
+yum install -y Percona-Server-client-57;
+yum install -y Percona-Server-shared-compat-57;
+yum install -y Percona-Server-shared-57;
+
 
